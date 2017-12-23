@@ -1,0 +1,1 @@
+# Exercises-of-SoftUni-Database-Basics-Course---MS-SQL-Server
