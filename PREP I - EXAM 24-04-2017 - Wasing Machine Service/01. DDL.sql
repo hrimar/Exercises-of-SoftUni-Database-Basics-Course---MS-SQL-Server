@@ -1,0 +1,98 @@
+--01
+--CREATE DATABASE WMS
+--USE WMS
+-- tova dava 18/30
+
+CREATE TABLE Clients(
+ClientId Int Primary KEY IDENTITY,
+FirstName VARCHAR(50) NOT NULL,
+LastName VARCHAR(50) NOT NULL,
+Phone CHAR(12) NOT NULL
+)
+CREATE TABLE Mechanics(
+MechanicId Int Primary KEY IDENTITY,
+FirstName VARCHAR(50) NOT NULL,
+LastName VARCHAR(50) NOT NULL,
+Address VARCHAR(255) NOT NULL
+)
+CREATE TABLE Models(
+ModelId Int Primary KEY IDENTITY  NOT NULL,
+Name VARCHAR(50) UNIQUE NOT NULL
+)
+CREATE TABLE Jobs(
+JobId Int Primary KEY IDENTITY NOT NULL,
+ModelId Int NOT NULL, 
+Status VARCHAR(11) NOT NULL DEFAULT 'Pending', --!!!
+ClientId INT NOT NULL,   
+MechanicId INT, 
+IssueDate DATE NOT NULL,
+FinishDate DATE, 
+CONSTRAINT FK_Jobs_Clients
+FOREIGN KEY(ClientId)
+REFERENCES Clients(ClientId), 
+CONSTRAINT FK_Jobs_Mechanics
+FOREIGN KEY(MechanicId)
+REFERENCES Mechanics(MechanicId),
+CONSTRAINT FK_Jobs_Models
+FOREIGN KEY(ModelId)
+REFERENCES Models(ModelId)
+)
+ALTER TABLE Jobs
+ADD CONSTRAINT Statuses
+CHECK (Status='Pending' OR Status='In Progress' OR Status='Finished')
+
+CREATE TABLE Orders(
+OrderId Int Primary KEY IDENTITY NOT NULL,
+JobId INT NOT NULL FOREIGN KEY REFERENCES Jobs(JobId),
+IssueDate DATE,
+Delivered BIT DEFAULT 0
+)
+CREATE TABLE Vendors(
+VendorId Int Primary KEY IDENTITY NOT NULL,
+Name VARCHAR(50) UNIQUE NOT NULL
+)
+CREATE TABLE Parts(
+PartId Int Primary KEY IDENTITY,
+SerialNumber VARCHAR(50) UNIQUE NOT NULL,
+Description VARCHAR(255),
+Price DECIMAL(6,2) NOT NUll CHECK (Price > 0),
+VendorId INT NOT NULL FOREIGN KEY REFERENCES Vendors(VendorId),
+StockQty INT NOT NULL DEFAULT 0
+)
+ALTER TABLE Parts
+ADD CONSTRAINT NotNegativQty
+CHECK (StockQty>=0)
+
+CREATE TABLE OrderParts(
+OrderId Int NOT NULL,
+PartId INT NOT NULL,
+Quantity INT NOT NULL DEFAULT 1,
+CONSTRAINT PK_OrderParts
+PRIMARY KEY(OrderId, PartId),
+CONSTRAINT FK_OrderParts_Orders
+FOREIGN KEY(OrderId)
+REFERENCES Orders(OrderId),
+CONSTRAINT FK_OrderParts_Parts
+FOREIGN KEY(PartId)
+REFERENCES Parts(PartId)
+)
+ALTER TABLE OrderParts
+ADD CONSTRAINT NotNegativ
+CHECK (Quantity>=0)
+
+CREATE TABLE PartsNeeded(
+JobId Int NOT NULL,
+PartId INT NOT NULL,
+Quantity INT NOT NULL DEFAULT 1,
+CONSTRAINT PK_PartsNeeded
+PRIMARY KEY(JobId, PartId),
+CONSTRAINT FK_PartsNeeded_Jobs
+FOREIGN KEY(JobId)
+REFERENCES Jobs(JobId),
+CONSTRAINT FK_PartsNeeded_Parts
+FOREIGN KEY(PartId)
+REFERENCES Parts(PartId)
+)
+ALTER TABLE PartsNeeded
+ADD CONSTRAINT NotNegativQ
+CHECK (Quantity>=0)
